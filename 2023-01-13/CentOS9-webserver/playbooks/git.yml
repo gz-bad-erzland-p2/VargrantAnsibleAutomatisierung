@@ -1,0 +1,22 @@
+---
+- name: Setup Webserver
+  hosts: centoswebserver
+  become: true
+  
+  tasks:
+    - name: Git clone
+      shell: git clone https://github.com/gz-bad-erzland-p2/NextJS-Office-Sharing
+      args:
+        chdir: /var/www/
+    - name: NPM Install
+      shell: npm install
+      args:
+        chdir: /var/www/NextJS-Office-Sharing
+    - name: NPM Run Build
+      shell: npm run build
+      args:
+        chdir: /var/www/NextJS-Office-Sharing
+    - name: NPM Run Start
+      shell: npm run start
+      args:
+        chdir: /var/www/NextJS-Office-Sharing
