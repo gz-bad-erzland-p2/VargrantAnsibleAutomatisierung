@@ -1,3 +1,0 @@
-# Contains all entries to inject into podmam-container: '/etc/hosts' file.
-
-10.20.30.50     testhost01.localdomain
