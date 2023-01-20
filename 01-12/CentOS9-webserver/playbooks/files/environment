@@ -1,3 +1,0 @@
-export http_proxy=http://10.254.5.100:3128
-export https_proxy=http://10.254.5.100:3128
-export no_proxy=localhost,.bsz-et.lan.dd-schulen.de
