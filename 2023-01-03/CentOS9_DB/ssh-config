@@ -1,0 +1,25 @@
+Host lnxhost
+  HostName 192.168.72.20
+  User vagrant
+  Port 22
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile c:/Vagrant/CentOS9/.vagrant/machines/lnxhost/vmware_desktop/private_key
+  IdentityFile ~/vagrant/CentOS9/.vagrant/machines/lnxhost/vmware_desktop/private_key
+  IdentityFile /CentOS9/.vagrant/machines/lnxhost/vmware_desktop/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+
+Host lnxhost-Internal
+HostName 192.168.98.128
+  User vagrant
+  Port 22
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile c:/Vagrant/CentOS9/.vagrant/machines/lnxhost/vmware_desktop/private_key
+  IdentityFile ~/vagrant/CentOS9/.vagrant/machines/lnxhost/vmware_desktop/private_key
+  IdentityFile /CentOS9/.vagrant/machines/lnxhost/vmware_desktop/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL 
