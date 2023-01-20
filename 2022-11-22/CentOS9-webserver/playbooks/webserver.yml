@@ -1,0 +1,35 @@
+---
+- name: Setup Webserver
+  hosts: centos
+  become: true
+  
+  tasks:
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest     
+    - name: Install httpd
+      ansible.builtin.dnf:
+        name: httpd
+        update_cache: true
+        state: latest
+    - name: Enable httpd
+      ansible.builtin.service:
+        name: httpd
+        enabled: true
+        state: started
+    - name: Open firewall for http service
+      ansible.posix.firewalld:
+        service: http
+        state: enabled
+        permanent: yes
+        immediate: yes
+    - name: Add custom index.html
+      ansible.builtin.copy:
+        dest: "/var/www/html/index.html"
+        content: |
+                    Custom Web Page
+    - name: Restart httpd
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
