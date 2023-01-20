@@ -1,0 +1,67 @@
+---
+- name: Setup Webserver
+  hosts: centos-webserver
+  become: true
+  
+  tasks:
+    - name: Set hostname to centos-webserver
+      become: true
+      ansible.builtin.hostname:
+        name: centos-webserver.localdomain
+        use: systemd
+        
+    - name: 'Set keyboard layout to: de-nodeadkeys'
+      become: true 
+      ansible.builtin.shell: 
+        cmd: |
+          if localectl status | grep -q 'VC Keymap: us'; then 
+             sudo localectl set-keymap de-nodeadkeys ; fi
+             
+    - name: Change timezone to Europe/Berlin
+      become: true 
+      community.general.timezone:
+        name: Europe/Berlin
+      
+    - name: Add an Ethernet connection with static IP
+      community.general.nmcli:
+        conn_name: eth0
+        ifname: eth0
+        type: ethernet
+        ip4: 192.168.86.11/24
+        gw4: 192.168.86.10
+        state: present
+        
+    - name: Restart NetworkManager
+      become: true
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+        
+    - name: Check Proxy Settings
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: '^export no_proxy'
+        state: absent
+      check_mode: yes
+      failed_when: false
+      changed_when: false
+      register: proxy_check  
+      tags: proxy
+
+    - name: Set Proxy Settings if not configured
+      become: true
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/environment"
+        dest: /etc/environment
+        force: true
+      when: not proxy_check.found
+      tags: proxy
+        
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+    - name: Install nano
+      ansible.builtin.dnf:
+        name: nano
+        state: latest
