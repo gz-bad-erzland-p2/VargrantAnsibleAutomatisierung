@@ -1,0 +1,25 @@
+---
+- name: Complete Virtual Machine Setup
+  hosts: all
+  become: true
+  
+  tasks: 
+#   Basic Setup
+    - name: Basic Virtual Machine Setup
+      ansible.builtin.import_tasks: 02-basic-setup.yml
+      
+#   CentOS DNS
+    - name: Complete DNS Setup
+      ansible.builtin.import_tasks: 03-centosdns.yml
+
+#   CentOS DHCP
+    - name: Complete DHCP Setup
+      ansible.builtin.import_tasks: 03-centosdhcp.yml
+      
+#   CentOS DATABASE
+    - name: Complete Database Setup
+      ansible.builtin.import_tasks: 03-centosdb.yml
+      
+#   CentOS WEBSERVER
+    - name: Complete Webserver Setup
+      ansible.builtin.import_tasks: 03-centoswebserver.yml

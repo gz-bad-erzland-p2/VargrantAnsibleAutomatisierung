@@ -1,0 +1,32 @@
+---
+- name: Basic Virtual Machine Setup
+  hosts: all
+  become: true
+  
+  tasks: 
+    - name: Set keyboard layout to 'de-nodeadkeys'
+      ansible.builtin.shell: 
+        cmd: |
+          if localectl status | grep -q 'VC Keymap: us'; then 
+             sudo localectl set-keymap de-nodeadkeys ; fi
+             
+    - name: Change timezone to Europe/Berlin
+      community.general.timezone:
+        name: Europe/Berlin
+             
+    - name: Check Proxy Settings
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: '^export no_proxy'
+        state: absent
+      check_mode: yes
+      failed_when: false
+      changed_when: false
+      register: proxy_check  
+
+    - name: Set Proxy Settings if not configured
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/environment"
+        dest: /etc/environment
+        force: true
+      when: not proxy_check.found

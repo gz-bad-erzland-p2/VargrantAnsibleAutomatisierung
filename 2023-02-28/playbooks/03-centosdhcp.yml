@@ -1,0 +1,60 @@
+---
+- name: Setup DHCP
+  hosts: centosdhcp
+  become: true
+  
+  tasks:
+#   VM Hostname
+    - name: Set hostname to centosdhcp
+      become: true
+      ansible.builtin.hostname:
+        name: centosdhcp.localdomain
+        use: systemd
+      
+#   IP Configuration 
+    - name: Add an Ethernet connection with static IP
+      community.general.nmcli:
+        conn_name: eth0
+        ifname: eth0
+        type: ethernet
+        ip4: 192.168.91.11/24
+        gw4: 192.168.91.10
+        dns4: 192.168.91.10
+        state: present 
+    - name: Restart NetworkManager
+      become: true
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+
+#   Install Packages   
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+    - name: Install nano
+      ansible.builtin.dnf:
+        name: nano
+        state: latest
+    - name: Install dhcp-server
+      ansible.builtin.dnf:
+        name: dhcp-server
+        state: latest
+
+#   DHCP Server       
+    - name: Set dhcpd.conf
+      become: true
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/dhcpd.conf"
+        dest: /etc/dhcp/dhcpd.conf
+        force: true     
+    - name: Enable dhcp-server
+      ansible.builtin.service:
+        name: dhcpd
+        enabled: true
+        state: started    
+    - name: Restart dhcp-server
+      ansible.builtin.service:
+        name: dhcpd
+        enabled: true
+        state: restarted

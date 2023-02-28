@@ -1,0 +1,133 @@
+---
+- name: Setup Webserver
+  hosts: centoswebserver
+  become: true
+  
+  tasks:
+#   VM Hostname
+    - name: Set hostname to centoswebserver
+      become: true
+      ansible.builtin.hostname:
+        name: centoswebserver.localdomain
+        use: systemd
+        
+#   IP Configuration  
+    - name: Add an Ethernet connection with static IP
+      community.general.nmcli:
+        conn_name: eth0
+        ifname: eth0
+        type: ethernet
+        ip4: 192.168.86.11/24
+        gw4: 192.168.86.10
+        dns4: 192.168.86.10
+        state: present     
+    - name: Restart NetworkManager
+      become: true
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+        
+#   Install Packages 
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+    - name: Install nano
+      ansible.builtin.dnf:
+        name: nano
+        update_cache: true
+        state: latest
+    - name: Install NPM
+      ansible.builtin.dnf:
+        name: npm
+        update_cache: true
+        state: latest
+    - name: Install httpd
+      ansible.builtin.dnf:
+        name: httpd
+        update_cache: true
+        state: latest
+    - name: Install nginx
+      ansible.builtin.dnf:
+        name: nginx
+        update_cache: true
+        state: latest
+    - name: Install GIT
+      ansible.builtin.dnf:
+        name: git
+        update_cache: true
+        state: latest
+        
+#   VM Configuration
+    - name: Open firewall port 80 TCP
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: yes
+        state: enabled
+        - name: Open firewall port 443 TCP
+      ansible.posix.firewalld:
+        port: 443/tcp
+        permanent: yes
+        state: enabled
+    - name: Reload Firewalld
+      systemd:
+        name: firewalld
+        state: reloaded
+    - name: Enable nginx
+      systemd:
+        name: nginx.service
+        state: enabled
+    - name: Change SELinux on httpd to permissive
+      community.general.selinux_permissive:
+        name: httpd_t
+        permissive: true
+
+#   Create Webserver
+    - name: Git clone
+      shell: git clone https://github.com/gz-bad-erzland-p2/NextJS-Office-Sharing
+      args:
+        chdir: /var/www/
+    - name: NPM Install
+      shell: npm install
+      args:
+        chdir: /var/www/NextJS-Office-Sharing
+    - name: NPM Run Build
+      shell: npm run build
+      args:
+        chdir: /var/www/NextJS-Office-Sharing    
+    - name: Set .env File
+      become: true
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/.env"
+        dest: /var/www/NextJS-Office-Sharing/.env
+        force: true     
+    - name: Set Webserver Config File
+      become: true
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/buchung.gz-bad-erzland-p2.de.conf"
+        dest: /etc/nginx/conf.d/buchung.gz-bad-erzland-p2.de.conf
+        force: true 
+    - name: Set Certificate
+      become: true
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/localhost.crt"
+        dest: /etc/nginx/conf.d/localhost.crt
+        force: true
+    - name: Set Decrypted Key
+      become: true
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/localhost.decrypted.key"
+        dest: /etc/nginx/conf.d/localhost.decrypted.key
+        force: true 
+    - name: NPM Prisma Generate
+      shell: npx prisma generate
+      args:
+        chdir: /var/www/NextJS-Office-Sharing
+    - name: NPM Prisma Deploy
+      shell: npx prisma migrate deploy
+      args:
+        chdir: /var/www/NextJS-Office-Sharing    
+    - name: Start Webserver
+      shell: npm run start
+      args:
+        chdir: /var/www/NextJS-Office-Sharing

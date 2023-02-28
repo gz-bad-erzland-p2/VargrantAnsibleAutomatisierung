@@ -1,0 +1,35 @@
+[groupcentosdns]
+centosdns			ansible_host=192.168.98.12 
+
+[groupcentosdns:vars]
+ansible_port=22
+ansible_user=vagrant
+ansible_ssh_private_key_file=sshkeys/centosdns-key
+ansible_ssh_common_args=-oIdentityFile=sshkeys/insecure_private_key
+
+[groupcentosdb]
+centosdb			ansible_host=192.168.98.11
+
+[groupcentosdb:vars]
+ansible_port=22
+ansible_user=vagrant
+ansible_ssh_private_key_file=sshkeys/centosdb-key
+ansible_ssh_common_args=-oIdentityFile=sshkeys/insecure_private_key
+
+[groupcentosdhcp]
+centosdhcp			ansible_host=192.168.91.11 
+
+[groupcentosdhcp:vars]
+ansible_port=22
+ansible_user=vagrant
+ansible_ssh_private_key_file=sshkeys/centosdhcp-key
+ansible_ssh_common_args=-oIdentityFile=sshkeys/insecure_private_key
+
+[groupcentoswebserver]
+centoswebserver			ansible_host=192.168.86.11 
+
+[groupcentoswebserver:vars]
+ansible_port=22
+ansible_user=vagrant
+ansible_ssh_private_key_file=sshkeys/centoswebserver-key
+ansible_ssh_common_args=-oIdentityFile=sshkeys/insecure_private_key
